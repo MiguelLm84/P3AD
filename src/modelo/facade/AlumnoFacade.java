@@ -66,7 +66,7 @@ public class AlumnoFacade {
 
 		Connection conexion = ConexionBD.getConexion();
 		Statement sentencia = conexion.createStatement();
-		sentencia.executeUpdate("DELETE FROM WHERE dni='" + dni+"'");
+		sentencia.executeUpdate("DELETE FROM escuela.alumno WHERE dni='" + dni+"'");
 		sentencia.close();
 		conexion.close();
 	}

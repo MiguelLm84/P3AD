@@ -5,7 +5,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.Date;
 import java.text.DateFormat;
-import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import javax.swing.JButton;
@@ -36,16 +35,17 @@ public abstract class AlumnosUI {
 	private JButton btnGuardar;
 	private JButton btnLimpiar;
 	private JButton btnEliminar;
-	private String dni;
 	private int idModulo;
 	private JTextField textField_nota;
+	private JLabel lblAnho;
 	private JTextField textField_anho;
+	private boolean editando;
 
 	/**
 	 * Create the application.
 	 */
 	public AlumnosUI(int idModulo) {
-		this.idModulo=idModulo;
+		this.idModulo = idModulo;
 		initialize();
 	}
 
@@ -99,47 +99,18 @@ public abstract class AlumnosUI {
 	 */
 	protected abstract List<AlumnoVO> transformarListaVO();
 
-	
-	 protected abstract void agregarCursa(String anho, int nota, String dni, int
-	 idModulo);
-	  
-	 protected abstract void editarCursa(String anho, int nota, String dni, int
-	 idModulo);
-	 
-	 protected abstract void eliminarCursa(int IdModulo, String dni);
-	 
+	protected abstract void agregarCursa(String anho, float nota, String dni, int idModulo);
+
+	protected abstract void editarCursa(String anho, float nota, String dni, int idModulo);
+
+	protected abstract void eliminarCursa(int IdModulo, String dni);
 
 	protected abstract List<CursaVO> listarCursa();
-
-	protected String getDni() {
-		return this.dni;
-	}
-
-	protected String getNombre() {
-		return this.TextField_nombre.getText();
-	}
-
-	protected String getAp1() {
-		return this.textField_ap1.getText();
-	}
-
-	protected String getAp2() {
-		return this.textField_ap2.getText();
-	}
-
-	protected String getTelefono() {
-		return this.textField_telefono.getText();
-	}
-
-	protected String getFechaNaci() {
-		return this.textField_fnaci.getText();
-	}
 
 	/**
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		dni = null;
 		frame = new JFrame();
 		frame.setResizable(false);
 		frame.setBounds(300, 300, 876, 678);
@@ -204,45 +175,53 @@ public abstract class AlumnosUI {
 		btnGuardar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-
-				if (dni == null) {  //TODO: El problema está aquí. El dni es siempre null o no es auto generado y da error. 
-
+				if(textField_dni==null) {
+					System.out.println("Es necesario introducir un dni.");
+				}
+				if (editando) { 
 					try {
 						DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
 						Date fechaNaci = format.parse(textField_fnaci.getText());
-						
-						agregarAlumno(textField_dni.getText(), TextField_nombre.getText(), textField_ap1.getText(),
-								textField_ap2.getText(), Integer.parseInt(textField_telefono.getText()), fechaNaci);
-						agregarCursa(textField_anho.getText(),Integer.parseInt(textField_nota.getText()),textField_dni.getText(),idModulo);
-						
-					} catch (NumberFormatException e) {
-						System.out.println("Error, el valor introducido no es un digito.");
-						
-					} catch (Exception f) {
-						System.out.println("Error, el valor introducido no es valido.");
-						
-					}
 
-				} else {
-
-					try {
-						DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-						Date fechaNaci = format.parse(textField_fnaci.getText());
-						
 						editarAlumno(textField_dni.getText(), TextField_nombre.getText(), textField_ap1.getText(),
 								textField_ap2.getText(), Integer.parseInt(textField_telefono.getText()), fechaNaci);
-						editarCursa(textField_anho.getText(), Integer.parseInt(textField_nota.getText()),textField_dni.getText(),idModulo);
-						
+						editarCursa(textField_anho.getText(), Float.parseFloat(textField_nota.getText()),
+								textField_dni.getText(), idModulo);
+						clearFields();
+						recargarTabla();
+						textField_dni.setEditable(true);
+
 					} catch (NumberFormatException e) {
 						System.out.println("Error, el valor introducido no es un digito.");
-						
-					}catch (Exception f) {
+						e.printStackTrace();
+					} catch (Exception e) {
 						System.out.println("Error, el valor introducido no es valido.");
-						
+						e.printStackTrace();
 					}
-				}
-				clearFields();
-				recargarTabla();
+					
+				} 
+				if(!editando && textField_dni != null) {
+
+					try {
+						DateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+						Date fechaNaci = format.parse(textField_fnaci.getText());
+
+						agregarAlumno(textField_dni.getText(), TextField_nombre.getText(), textField_ap1.getText(),
+								textField_ap2.getText(), Integer.parseInt(textField_telefono.getText()), fechaNaci);
+						agregarCursa(textField_anho.getText(), Float.parseFloat(textField_nota.getText()),
+								textField_dni.getText(), idModulo);
+						clearFields();
+						recargarTabla();
+						textField_dni.setEditable(true);
+
+					} catch (NumberFormatException e) {
+						System.out.println("Error, el valor introducido no es un digito.");
+						e.printStackTrace();
+					} catch (Exception e) {
+						System.out.println("Error, el valor introducido no es valido.");
+						e.printStackTrace();
+					}
+				} 
 			}
 		});
 		btnGuardar.setBounds(769, 26, 89, 23);
@@ -253,6 +232,8 @@ public abstract class AlumnosUI {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
 				clearFields();
+				textField_dni.setEditable(true);
+				editando=false;
 			}
 
 		});
@@ -265,12 +246,12 @@ public abstract class AlumnosUI {
 		btnEliminar.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent arg0) {
-				if (textField_dni.getText() != null) { //TODO: cambié dni por textField_dni.getText().
+				if (textField_dni.getText() != null) { 
 					int res = JOptionPane.showConfirmDialog(null,
-							"El alumno " + getNombre() + " se eliminará de forma permanente", "Eliminar",
+							"El alumno " + TextField_nombre.getText() + " se eliminará de forma permanente", "Eliminar",
 							JOptionPane.OK_CANCEL_OPTION);
 					if (res == JOptionPane.OK_OPTION) {
-						eliminarAlumno(dni);
+						eliminarAlumno(textField_dni.getText());
 						eliminarCursa(idModulo, textField_dni.getText());
 						clearFields();
 						recargarTabla();
@@ -294,7 +275,9 @@ public abstract class AlumnosUI {
 			public void mouseClicked(MouseEvent arg0) {
 				btnEliminar.setEnabled(true);
 				btnGuardar.setText("Guardar");
+				editando=true;
 				textField_dni.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 0));
+				textField_dni.setEditable(false);
 				TextField_nombre.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 1));
 				textField_ap1.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 2));
 				textField_ap2.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 3));
@@ -302,10 +285,28 @@ public abstract class AlumnosUI {
 				textField_fnaci.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 5));
 				textField_nota.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 6));
 				textField_anho.setText((String) table.getModel().getValueAt(table.getSelectedRow(), 7));
-				
+
 			}
 		});
 		scrollPane.setViewportView(table);
+		
+		JLabel lblNota = new JLabel("Nota");
+		lblNota.setBounds(516, 12, 56, 16);
+		frame.getContentPane().add(lblNota);
+		
+		textField_nota = new JTextField();
+		textField_nota.setBounds(516, 28, 116, 22);
+		frame.getContentPane().add(textField_nota);
+		textField_nota.setColumns(10);
+		
+		lblAnho = new JLabel("A\u00F1o");
+		lblAnho.setBounds(516, 63, 56, 16);
+		frame.getContentPane().add(lblAnho);
+		
+		textField_anho = new JTextField();
+		textField_anho.setBounds(516, 79, 116, 22);
+		frame.getContentPane().add(textField_anho);
+		textField_anho.setColumns(10);
 
 		recargarTabla();
 
@@ -319,15 +320,17 @@ public abstract class AlumnosUI {
 		tm.addColumn("2º Apellido");
 		tm.addColumn("Teléfono");
 		tm.addColumn("Fecha Nacimiento");
-		
+		tm.addColumn("Nota");
+		tm.addColumn("Año");
+
 		for (AlumnoVO alumno : transformarListaVO()) {
 			for (CursaVO cursa : listarCursa()) {
 				if (alumno.getDni().equals(cursa.getDni()) && idModulo == cursa.getIdModulo()) {
 					SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy");
-					
+
 					String fechaNaci = sdf.format(alumno.getFechaNaci());
 					tm.addRow(new String[] { alumno.getDni(), alumno.getNombre(), alumno.getApellido1(),
-							alumno.getApellido2(), String.valueOf(alumno.getTelefono()), fechaNaci});
+							alumno.getApellido2(), String.valueOf(alumno.getTelefono()), fechaNaci, String.valueOf(cursa.getNota()), cursa.getAnho()});
 				}
 			}
 
@@ -338,8 +341,10 @@ public abstract class AlumnosUI {
 		table.getColumnModel().getColumn(1).setPreferredWidth(200);
 		table.getColumnModel().getColumn(2).setPreferredWidth(200);
 		table.getColumnModel().getColumn(3).setPreferredWidth(200);
-		table.getColumnModel().getColumn(4).setPreferredWidth(110);
+		table.getColumnModel().getColumn(4).setPreferredWidth(150);
 		table.getColumnModel().getColumn(5).setPreferredWidth(90);
+		table.getColumnModel().getColumn(6).setPreferredWidth(40);
+		table.getColumnModel().getColumn(7).setPreferredWidth(90);
 		table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 	}
 
@@ -352,6 +357,8 @@ public abstract class AlumnosUI {
 		textField_ap2.setText("");
 		textField_telefono.setText("");
 		textField_fnaci.setText("");
+		textField_nota.setText("");
+		textField_anho.setText("");
 		table.clearSelection();
 	}
 }

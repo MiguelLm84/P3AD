@@ -33,7 +33,7 @@ public class CursaFacade {
 		while (resultado.next()) {
 			CursaVO cursa = new CursaVO();
 			cursa.setAnho(resultado.getString("anho"));
-			cursa.setNota(resultado.getInt("nota"));
+			cursa.setNota(resultado.getFloat("nota"));
 			cursa.setDni(resultado.getString("dni"));
 			cursa.setIdModulo(resultado.getInt("idModulo"));
 			cursan.add(cursa);
@@ -49,8 +49,8 @@ public class CursaFacade {
 
 		Connection conexion = ConexionBD.getConexion();
 		Statement sentencia = conexion.createStatement();
-		sentencia.executeUpdate("UPDATE escuela.cursa SET anho='" + cursa.getAnho() + "' WHERE idModulo="
-				+ cursa.getIdModulo() + " AND dni='" + cursa.getDni() + "'");
+		sentencia.executeUpdate("UPDATE escuela.cursa SET anho='" + cursa.getAnho() + "',nota=" + cursa.getNota()
+				+ " WHERE idModulo=" + cursa.getIdModulo() + " AND dni='" + cursa.getDni() + "'");
 		sentencia.close();
 		conexion.close();
 
@@ -60,8 +60,7 @@ public class CursaFacade {
 
 		Connection conexion = ConexionBD.getConexion();
 		Statement sentencia = conexion.createStatement();
-		sentencia.executeUpdate("DELETE FROM escuela.cursa WHERE idModulo=" + idModulo + " AND dni='"
-				+ dni + "'");
+		sentencia.executeUpdate("DELETE FROM escuela.cursa WHERE idModulo=" + idModulo + " AND dni='" + dni + "'");
 		sentencia.close();
 		conexion.close();
 	}

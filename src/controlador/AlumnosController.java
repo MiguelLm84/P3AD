@@ -66,7 +66,7 @@ public class AlumnosController extends AlumnosUI{
 	}
 	
 	@Override
-	protected void agregarCursa(String anho, int nota, String dni, int idModulo) {
+	protected void agregarCursa(String anho, float nota, String dni, int idModulo) {
 
 		CursaVO cursa = new CursaVO(anho, nota, dni, idModulo);
 
@@ -78,7 +78,7 @@ public class AlumnosController extends AlumnosUI{
 	}
 
 	@Override
-	protected void editarCursa(String anho, int nota, String dni, int idModulo) {
+	protected void editarCursa(String anho, float nota, String dni, int idModulo) {
 
 		CursaVO cursa = new CursaVO(anho, nota, dni, idModulo);
 
